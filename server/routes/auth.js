@@ -35,7 +35,7 @@ router.post('/login', async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Directly compare passwords since we removed hashing
+
     if (user.password !== password) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
