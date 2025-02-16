@@ -8,7 +8,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { userId, setUserId, login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,6 +18,7 @@ function Login() {
         password,
       });
       login(response.data.token);
+      console.log("login respose ", response.data);
       navigate('/users');
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred');

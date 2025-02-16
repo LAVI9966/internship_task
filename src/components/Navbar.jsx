@@ -1,27 +1,26 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import UpdateUser from './UpdateUser';
+// import './Navbar.css'; // Import the CSS file for navbar styling
+
 function Navbar() {
   const { token, user, logout } = useAuth();
 
   return (
     <nav className="navbar">
       <div className="nav-brand">
-        <Link to="/">User Management</Link>
+        <Link to="/" className="nav-logo">User Management</Link>
       </div>
       <div className="nav-links">
         {token ? (
           <>
-            <Link to="/users">Users</Link>
-            <Link to={`/update-user/`}>Update User</Link> {/* Note the change here */}
-            <button onClick={logout} className="logout-btn">
-              Logout
-            </button>
+            <Link to="/users" className="nav-item">Users</Link>
+            <Link to={`/update-user/`} className="nav-item">Update User</Link>
+            <button onClick={logout} className="logout-btn">Logout</button>
           </>
         ) : (
           <>
-            <Link to="/login">Login</Link>
-            <Link to="/signup">Sign Up</Link>
+            <Link to="/login" className="nav-item">Login</Link>
+            <Link to="/signup" className="nav-item">Sign Up</Link>
           </>
         )}
       </div>

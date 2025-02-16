@@ -7,9 +7,9 @@ const router = express.Router();
 // Signup
 router.post('/signup', async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
-    const user = new User({ name, email, password });
+    const user = new User({ name, email, password, role });
     await user.save();
 
     const token = jwt.sign(
@@ -28,14 +28,15 @@ router.post('/signup', async (req, res, next) => {
 router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    console.log("Login attempt");
 
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
+    // Directly compare passwords since we removed hashing
+    if (user.password !== password) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -45,10 +46,11 @@ router.post('/login', async (req, res, next) => {
       { expiresIn: '24h' }
     );
 
-    res.json({ token });
+    res.json({ token, user });
   } catch (err) {
     next(err);
   }
 });
+
 
 export default router;

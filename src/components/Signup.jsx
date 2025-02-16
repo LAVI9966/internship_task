@@ -7,6 +7,7 @@ function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -18,6 +19,7 @@ function Signup() {
         name,
         email,
         password,
+        role,
       });
       login(response.data.token);
       navigate('/users');
@@ -32,6 +34,18 @@ function Signup() {
       {error && <div className="error">{error}</div>}
 
       <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Role:</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+          >
+            <option value="">Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
         <div className="form-group">
           <label>Name:</label>
           <input

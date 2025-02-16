@@ -5,8 +5,8 @@ import { useAuth } from '../context/AuthContext';
 function UserList() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
-  const { token } = useAuth();
-
+  const { token, user } = useAuth();
+  console.log("user is ", user)
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -23,6 +23,7 @@ function UserList() {
   }, [token]);
 
   const handleDelete = async (id) => {
+
     try {
       await axios.delete(`http://localhost:5000/api/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` }

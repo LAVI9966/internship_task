@@ -1,63 +1,157 @@
-// src/components/UpdateUser.jsx
-
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 function UpdateUser() {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState({ name: '', email: '' });
+    const [updateData, setUpdateData] = useState({ name: '', email: '', password: '' });
+    const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '' });
+    const [refresh, setRefresh] = useState(false);
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
 
-    const { userId } = useParams();
+    const { token, setUser, user } = useAuth();
 
-    const handleUpdate = async (e) => {
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                if (!token) {
+                    console.error("No token available!");
+                    return;
+                }
+
+                const response = await axios.get(`http://localhost:5000/api/users/singleuser`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.data) {
+                    setFormData(response.data);
+                    setUser(response.data);
+                }
+            } catch (err) {
+                console.error('Error fetching user:', err);
+                setError('Failed to load user data');
+            }
+        };
+
+        fetchUserData();
+    }, [refresh]);
+
+    // Handle input change for updating profile
+    const handleProfileChange = (e) => {
+        setUpdateData({ ...updateData, [e.target.name]: e.target.value });
+    };
+
+    // Handle input change for updating password
+    const handlePasswordChange = (e) => {
+        setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    };
+
+    // Handle profile update submission
+    const handleProfileSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`/api/users/${userId}`, {
-                name,
-                email,
-                password
-            });
-            setSuccess(true);
-            setError(null);
+            const response = await axios.post(
+                'http://localhost:5000/api/users/updateuser',
+                { user, formForSending: updateData },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (response.status === 200) {
+                alert("User Updated Successfully");
+                setRefresh(!refresh);
+            }
         } catch (err) {
-            setError('Failed to update user');
-            setSuccess(false);
+            console.error("Error:", err.response?.data || err.message);
+            alert("Enter Right Password ");
+        }
+    };
+
+    // Handle password update submission
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            console.log("passwordData", passwordData);
+            const response = await axios.post(
+                'http://localhost:5000/api/users/updatepassword',
+                { userId: user._id, ...passwordData },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (response.status === 200) {
+                alert("Password updated successfully");
+                setPasswordData({ oldPassword: '', newPassword: '' });
+            }
+        } catch (err) {
+            console.error("Error:", err.response?.data || err.message);
+            alert("Error updating password");
         }
     };
 
     return (
-        <div>
-            <h2>Update User</h2>
-            <form onSubmit={handleUpdate}>
-                <input
-                    type="text"
-                    placeholder="Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                />
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button type="submit">Update User</button>
-            </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {success && <p style={{ color: 'green' }}>User updated successfully!</p>}
+        <div className="update-user-container">
+            {/* Section 1: User Details */}
+            <div className="user-details">
+                <h2>Your Details</h2>
+                <p><strong>Name:</strong> {formData.name}</p>
+                <p><strong>Email:</strong> {formData.email}</p>
+                <p><strong>Role:</strong> {formData.role}</p>
+            </div>
+
+            {/* Section 2: Update Profile */}
+            <div className="update-profile">
+                <h2>Update Profile</h2>
+                <form onSubmit={handleProfileSubmit}>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="New Name"
+                        value={updateData.name}
+                        onChange={handleProfileChange}
+                        required
+                    />
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="New Email"
+                        value={updateData.email}
+                        onChange={handleProfileChange}
+                        required
+                    />
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Current Password"
+                        value={updateData.password}
+                        onChange={handleProfileChange}
+                        required
+                    />
+                    <button type="submit">Update Profile</button>
+                </form>
+            </div>
+
+            {/* Section 3: Update Password */}
+            <div className="update-password">
+                <h2>Update Password</h2>
+                <form onSubmit={handlePasswordSubmit}>
+                    <input
+                        type="password"
+                        name="oldPassword"
+                        placeholder="Current Password"
+                        value={passwordData.oldPassword}
+                        onChange={handlePasswordChange}
+                        required
+                    />
+                    <input
+                        type="password"
+                        name="newPassword"
+                        placeholder="New Password"
+                        value={passwordData.newPassword}
+                        onChange={handlePasswordChange}
+                        required
+                    />
+                    <button type="submit">Update Password</button>
+                </form>
+            </div>
         </div>
     );
 }
